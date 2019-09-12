@@ -3,5 +3,5 @@ Analisador Léxico em C
 
 Intruções p/ compilar: 
 
-make
+make \n
 ./lexer filename.c
