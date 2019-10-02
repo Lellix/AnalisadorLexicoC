@@ -1,6 +1,6 @@
 # Lexical Analyzer
 
-> Programming Language: C
+> Language: C
 
 ## Compilation Instructions
 
