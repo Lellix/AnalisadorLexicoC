@@ -7,7 +7,7 @@
 1.  Open shell;
 2.  Open the Lexical Analyzer folder; 
 3.  Write "make" and press enter;
-4.  Write ./lexer <file_name>
+4.  Write ./lexer <file_name> and press enter.
 
 ## Accepted Terms
 
