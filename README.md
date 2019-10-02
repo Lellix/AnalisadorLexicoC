@@ -57,8 +57,8 @@
 * ++
 * --
 
-* >
-* <
+* is more than 
+* is less than
 * =
 * &&
 * ||
@@ -67,7 +67,7 @@
 * <=
 * !
 
-## Separators
+### Separators
 
 * ,
 * ;
@@ -75,8 +75,7 @@
 * )
 * {
 * }
-* [
-* ]
+* brackets
 * :
 * space
 * tab
@@ -84,7 +83,7 @@
 * \
 * '
 
-## Binaries
+### Binaries
 
 * &
 * |
