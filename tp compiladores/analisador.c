@@ -2,16 +2,17 @@
 
 #define NOKEYWORD 1000
 
-void cleanString(char* String){
-	int size = strlen(String);
-
+void cleanString(char* string){
+	int size = strlen(string);
+	/*llalalala*/
 	for(int i = 0; i < size ; i++){
-		String[i] = '\0';
+		string[i] = '\0';
 	}
 }
 
 void lexicalAnalyzer(list* tokensList, char* line, int lineNumber){
 
+	Token token;
 	int size = strlen(line);
 	int type;
 	int i, j = 0;
@@ -20,62 +21,67 @@ void lexicalAnalyzer(list* tokensList, char* line, int lineNumber){
 	
 	/* percorre a string até achar um separador ou operador */
 	for(i = 0; i < size; i++){
-		/* if line[*i] is a separator*/
-		if(MatchSeparator(line[i], tokensList) != -1){
+
+		/* if the current char is a comment symbol */
+		if (isComment(line, &i, size, tokensList, lineNumber, token) != -1){ 
+
+			if(aux == 0){
+
+				ChooseType(unidentifiedToken, tokensList, i, lineNumber, token);
+				cleanString(unidentifiedToken);
+				j = 0;
+
+			}
+
+			insert(tokensList, token);
+			aux = 1;
+
+		/* if the current char is a literal symbol */
+		} else if(isLiteral(line, &i, tokensList, lineNumber, token) != -1){
+
+			if(aux == 0){
+
+				ChooseType(unidentifiedToken, tokensList, i, lineNumber, token);
+				cleanString(unidentifiedToken);
+				j = 0;
+
+			}
+
+			insert(tokensList, token);
+			aux = 1;
+
+		/* if the current char is a separator*/
+		} else if(MatchSeparator(line[i], tokensList, i, lineNumber, token) != -1){
 			
 			// se o anterior é o final de um token
 			if(aux == 0){
 
-				ChooseType(unidentifiedToken, tokensList, i, lineNumber);
+				ChooseType(unidentifiedToken, tokensList, i, lineNumber, token);
 				cleanString(unidentifiedToken);
 				j = 0;
 
 			}
 
+			if(line[i]!=' ' && line[i]!='	') insert(tokensList, token);
 			aux = 1;
 
-		/* if line[*i] is a operator*/
-		} else if(MatchOperator(line[i], tokensList, line[i+1], &i) != -1){
+		/* if the current char is a operator*/
+		} else if(MatchOperator(line[i], tokensList, line[i+1], &i, lineNumber, token) != -1){
 
 			// se o anterior é o final de um token (se for separador n precisa)
 			if(aux == 0){
 
-				ChooseType(unidentifiedToken, tokensList, i, lineNumber);
+				ChooseType(unidentifiedToken, tokensList, i, lineNumber, token);
 				cleanString(unidentifiedToken);
 			}
 
+			insert(tokensList, token);
 			aux = 1;
 
-		/* if line[*i] is a literal symbol */
-		} else if(isLiteral(line, &i, tokensList) != -1){
-
-			if(aux == 0){
-
-				ChooseType(unidentifiedToken, tokensList, i, lineNumber);
-				cleanString(unidentifiedToken);
-				j = 0;
-
-			}
-
-			aux = 1;
-
-		/* if line[*i] is a comment symbol */
-		} else if (isComment(line, &i, size, tokensList) != -1){ 
-
-			if(aux == 0){
-
-				ChooseType(unidentifiedToken, tokensList, i, lineNumber);
-				cleanString(unidentifiedToken);
-				j = 0;
-
-			}
-			aux = 1;
-
-		/* line[*i] isn't a reserved symbol */
+		/* the current char isn't a reserved symbol */
 		} else {
 			aux = 0;
 			unidentifiedToken[j] = line[i];
-			printf("TOKEN: %s\n",unidentifiedToken);
 			j++;
 
 		}
@@ -83,9 +89,8 @@ void lexicalAnalyzer(list* tokensList, char* line, int lineNumber){
 	}
 }
 
-int isLiteral(char* line, int *i, list* tokensList){
+int isLiteral(char* line, int *i, list* tokensList, int lineNumber, Token token){
 
-	Token token;
 	char* unidentifiedToken = (char*)malloc(strlen(line)*sizeof(char));
 	int k, j = 0;
 
@@ -112,7 +117,6 @@ int isLiteral(char* line, int *i, list* tokensList){
 		token.type = literal;
 		token.name = unidentifiedToken;
 
-		insert(tokensList, token);
 		printf("Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
 		free(unidentifiedToken);
 
@@ -139,7 +143,6 @@ int isLiteral(char* line, int *i, list* tokensList){
 		token.type = literal;
 		token.name = unidentifiedToken;
 
-		insert(tokensList, token);
 		printf("Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
 		free(unidentifiedToken);
 
@@ -165,98 +168,118 @@ int isLiteral(char* line, int *i, list* tokensList){
 		token.group = literal;
 		token.type = literal;
 		token.name = unidentifiedToken;
-
-		insert(tokensList, token);
+	 
 		printf("Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
 		free(unidentifiedToken);
 
 		return *i;
 	} else if (line[*i] == '<'){
 
-		k = *i+1;
+		int x = *i+1;
+		int isHeader = -1;
 
- 		unidentifiedToken[j] = line[*i];
- 		j++;
+		while(x<strlen(line)){
 
-		while(line[k] != '>'){
+			if(line[x] == '>') isHeader = 0;
 
-			unidentifiedToken[j] = line[k];
-			j++;
-			k++;
+			x++;
 
 		}
 
-		*i = k; //pula pro final do literal
-		unidentifiedToken[j] = line[*i];
+		if(isHeader == 0){
 
-		token.group = header;
-		token.type = header;
-		token.name = unidentifiedToken;
+			k = *i+1;
 
-		insert(tokensList, token);
-		printf("Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
-		free(unidentifiedToken);
+	 		unidentifiedToken[j] = line[*i];
+	 		j++;
 
-		return *i;
+			while(line[k] != '>'){
+
+				unidentifiedToken[j] = line[k];
+				j++;
+				k++;
+
+			}
+
+			*i = k; //pula pro final do literal
+			unidentifiedToken[j] = line[*i];
+
+			token.group = header;
+			token.type = header;
+			token.name = unidentifiedToken;
+
+			printf("Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
+			free(unidentifiedToken);
+
+			return *i;
+		}
 	}
 
 	free(unidentifiedToken);
 	return -1;
 }
 
-int isComment(char* line, int *i, int size, list* tokensList){
+int isComment(char* line, int *i, int size, list* tokensList, int lineNumber, Token token){
 
-	Token token;
 	char* unidentifiedToken = (char*)malloc(strlen(line)*sizeof(char));
-	int j = 0;
+	int j = 0, aux = *i;
 
+	if(line[aux] == '/' && line[aux+1] == '/'){
 
-	if(line[*i] == '/' && line[*i+1] == '/'){
+		while(aux < size){
 
-		while(*i < size){
-
-			unidentifiedToken[j] = line[*i];
-			*i++;
-		}
-
-		token.group = comment;
-		token.type = comment;
-		token.name = unidentifiedToken;
-
-		insert(tokensList, token);
-		printf("Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
-		free(unidentifiedToken);
-
-		return *i;
-	} else if (line[*i] == '/' && line[*i+1] == '*') {
-
-
-		while(line[*i] != '*' && line[*i+1] != '/'){ //nao vai pegar o ultimo?
-
-			unidentifiedToken[j] = line[*i];
+			unidentifiedToken[j] = line[aux];
 			j++;
-			i++;
+			aux++;
 		}
-
-		unidentifiedToken[j+1] = line[*i+1];
 
 		token.group = comment;
 		token.type = comment;
 		token.name = unidentifiedToken;
 
-		insert(tokensList, token);
+		 
 		printf("Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
 		free(unidentifiedToken);
 
-		return *i;
+		*i = aux;
+
+		return aux;
+	} else if (line[aux] == '/' && line[aux+1] == '*') {
+
+		unidentifiedToken[j] = line[aux];
+		unidentifiedToken[j+1] = line[aux+1];
+
+		j+=2;
+		aux+=2;
+
+		while(line[aux] != '*' && line[aux+1] != '/'){
+
+			unidentifiedToken[j] = line[aux];
+			j++;
+			aux++;
+		}
+
+		unidentifiedToken[j] = line[aux];
+		unidentifiedToken[j+1] = line[aux+1];
+
+		token.group = comment;
+		token.type = comment;
+		token.name = unidentifiedToken;
+
+		 
+		*i = aux+1;
+
+		printf("Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
+		free(unidentifiedToken);
+
+		return aux;
 	}
 
 	return -1;
 }
 
-int isKeywords(char* unidentifiedToken, list* tokensList){
+int isKeywords(char* unidentifiedToken, list* tokensList, int column, int lineNumber, Token token){
 
-	Token token;
 	token.group = keywords;
 
 	if(strcmp(unidentifiedToken, "int") == 0){
@@ -368,14 +391,13 @@ int isKeywords(char* unidentifiedToken, list* tokensList){
 		return -1;
 	}
 
-	insert(tokensList, token);
+	 
 	printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 	return 0;
 }
 
-int isIdentifierOrNumber(char* unidentifiedToken, list* tokensList){
+int isIdentifierOrNumber(char* unidentifiedToken, list* tokensList, int column, int lineNumber, Token token){
 
-	Token token;
 	int test = 0, dotCont = 0, isVariable = 0;
 
 	/* identifier */
@@ -383,11 +405,11 @@ int isIdentifierOrNumber(char* unidentifiedToken, list* tokensList){
 		
 		for(int i = 0; i < strlen(unidentifiedToken); i++){
 
-			if(unidentifiedToken[i] != '_' && 
+			if(unidentifiedToken[i] != '_' && unidentifiedToken[i] != '.' &&
 				(unidentifiedToken[i] < 65 || unidentifiedToken[i] > 90) && (unidentifiedToken[i] < 97 || unidentifiedToken[i] > 122) &&
 				!isdigit(unidentifiedToken[i])){
 				
-				isVariable = 1;
+				isVariable = -1;
 				break;
 			}
 
@@ -398,7 +420,7 @@ int isIdentifierOrNumber(char* unidentifiedToken, list* tokensList){
 			token.type = identifiers;
 			token.name = unidentifiedToken;
 
-			insert(tokensList, token);
+			 
 			printf("Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
 			return 0;
 		}
@@ -412,7 +434,7 @@ int isIdentifierOrNumber(char* unidentifiedToken, list* tokensList){
 		token.type = include;
 		token.name = unidentifiedToken;
 
-		insert(tokensList, token);
+		 
 		printf("Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
 
 		return 0;
@@ -426,7 +448,7 @@ int isIdentifierOrNumber(char* unidentifiedToken, list* tokensList){
 		token.type = define;
 		token.name = unidentifiedToken;
 
-		insert(tokensList, token);
+		 
 		printf("Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
 
 		return 0;
@@ -466,7 +488,7 @@ int isIdentifierOrNumber(char* unidentifiedToken, list* tokensList){
 		token.type = 000;
 		token.name = unidentifiedToken;
 
-		insert(tokensList, token);
+		 
 		printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 
 		return 0;
@@ -476,9 +498,7 @@ int isIdentifierOrNumber(char* unidentifiedToken, list* tokensList){
 	return -1;
 }
 
-int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i){
-
-	Token token;
+int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i, int lineNumber, Token token){
 
 	switch (unidentifiedOperator){
 
@@ -492,7 +512,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				} else if(next == '+'){
 
@@ -502,7 +522,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				} else {
 
@@ -510,7 +530,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token.type = plus;
 					token.name = "+";
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				}
 
@@ -527,7 +547,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				}else if(next == '-'){
 
@@ -537,7 +557,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				} else {
 
@@ -545,7 +565,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token.type = minus;
 					token.name = "-";
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				}
 				return *i;
@@ -561,7 +581,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 
 				} else {	
@@ -570,7 +590,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token.type = times;
 					token.name = "*";
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				}
 				return *i;
@@ -586,7 +606,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 
 				} else {
@@ -595,7 +615,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token.type = division;
 					token.name = "/";
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				}
 				return *i;
@@ -611,7 +631,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				} else if(next == '='){
 
@@ -621,14 +641,14 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				} else {
 					token.group = logicalOperators;
 					token.type = isMoreThan;
 					token.name = ">";
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				}
 				return *i;
@@ -644,7 +664,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				} else if(next == '='){
 
@@ -654,14 +674,14 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				} else {
 					token.group = arithmeticOperators;
 					token.type = isLessThan;
 					token.name = "<";
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				}
 				return *i;
@@ -677,14 +697,14 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);	
 				} else {
 					token.group = arithmeticOperators;
 					token.type = equals;
 					token.name = "=";
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				}
 				return *i;
@@ -700,7 +720,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				} else {
 
@@ -708,7 +728,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token.type = comercial;
 					token.name = "&";
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				}
 				return *i;
@@ -724,7 +744,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 
 				} else {
@@ -733,7 +753,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token.type = bwor;
 					token.name = "|";
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				}
 				return *i;
@@ -749,7 +769,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 
 				} else {
@@ -758,7 +778,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token.type = not;
 					token.name = "!";
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 				}
 				return *i;
@@ -774,7 +794,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 
 					*i++;
 
-					insert(tokensList, token);
+					 
 					printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 
 				}
@@ -783,9 +803,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 		return -1;
 }
 
-int MatchSeparator(char unidentifiedSeparator, list* tokensList){
-
-	Token token;
+int MatchSeparator(char unidentifiedSeparator, list* tokensList, int column, int lineNumber, Token token){
 
 	switch (unidentifiedSeparator){
 
@@ -795,7 +813,7 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList){
 			token.type = comma;
 			token.name = ",";
 
-			insert(tokensList, token);
+			 
 			printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 			return 0;
 
@@ -807,7 +825,7 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList){
 			token.type = semicolon;
 			token.name = ";";
 
-			insert(tokensList, token);
+			 
 			printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 			return 0;
 
@@ -819,7 +837,7 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList){
 			token.type = leftParenthesis;
 			token.name = "(";
 
-			insert(tokensList, token);
+			 
 			printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 			return 0;
 
@@ -831,7 +849,7 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList){
 			token.type = rightParenthesis;
 			token.name = ")";
 
-			insert(tokensList, token);
+			 
 			printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 			return 0;
 
@@ -843,7 +861,7 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList){
 			token.type = leftBrace;
 			token.name = "{";
 
-			insert(tokensList, token);
+			 
 			printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 			return 0;
 
@@ -855,7 +873,7 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList){
 			token.type = rightBrace;
 			token.name = "}";
 
-			insert(tokensList, token);
+			 
 			printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 			return 0;
 
@@ -867,7 +885,7 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList){
 			token.type = leftBracket;
 			token.name = "[";
 
-			insert(tokensList, token);
+			 
 			printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 			return 0;
 
@@ -879,7 +897,7 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList){
 			token.type = rightBracket;
 			token.name = "]";
 
-			insert(tokensList, token);
+			 
 			printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 			return 0;
 
@@ -891,7 +909,7 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList){
 			token.type = colon;
 			token.name = ":";
 
-			insert(tokensList, token);
+			 
 			printf("Token: %s group: %d type: %d\n\n", token.name, token.group, token.type);
 			return 0;
 
@@ -899,24 +917,12 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList){
 
 		case ' ':
 
-			token.group = separators;
-			token.type = space;
-			token.name = " ";
-
-			insert(tokensList, token);
-			printf("Token: %s(space) group: %d type: %d\n\n", token.name, token.group, token.type);
 			return 0;
 
 		break;
 
 		case '	':
 
-			token.group = separators;
-			token.type = tab;
-			token.name = "	";
-
-			insert(tokensList, token);
-			printf("Token: %s(tab) group: %d type: %d\n\n", token.name, token.group, token.type);
 			return 0;
 
 		break;
@@ -926,14 +932,14 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList){
 	return -1;
 }
 
-void ChooseType(char* unidentifiedToken, list* tokensList, int i, int lineNumber){
+void ChooseType(char* unidentifiedToken, list* tokensList, int i, int lineNumber, Token token){
 
-	int aux = isKeywords(unidentifiedToken, tokensList);
+	int aux = isKeywords(unidentifiedToken, tokensList, i, lineNumber, token);
 	int column = i-strlen(unidentifiedToken);
 
 	if(aux == -1){
 
-		aux = isIdentifierOrNumber(unidentifiedToken, tokensList);
+		aux = isIdentifierOrNumber(unidentifiedToken, tokensList, i, lineNumber, token);
 
 		if(aux == -1){
 			printf("\n-------------------------------\n");
@@ -946,5 +952,5 @@ void ChooseType(char* unidentifiedToken, list* tokensList, int i, int lineNumber
 
 		cleanString(unidentifiedToken);
 
-	}
+	} else cleanString(unidentifiedToken);
 }

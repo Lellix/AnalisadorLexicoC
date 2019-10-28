@@ -2,7 +2,7 @@
 
 int main(int argc, char const *argv[]){
 
-	char *fileName = (char*)malloc(strlen(argv[1])*sizeof(char));
+	char *fileName = (char*)malloc(250*sizeof(char));
 	strcpy(fileName, argv[1]);
 	readFile(fileName);
 
