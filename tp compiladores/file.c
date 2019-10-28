@@ -64,7 +64,7 @@ void readFile(char* fileName){
 
 	while(!feof(file)){
 		fgets(fileLine, 250, file);
-		lexicalAnalyzer(tokensList, fileLine);
+		lexicalAnalyzer(tokensList, fileLine, line);
 		line++;
 	}
 

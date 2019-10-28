@@ -11,11 +11,13 @@
 #define logicalOperators     3
 #define separators           4
 #define comment              5
-#define binaries 			 6
+#define bitwise 			 6
 #define number               7
+#define header				 8
 #define include              101
 #define literal              102
-#define error				 100
+#define define               103
+#define error				 404
 
 /* ---------------------------------------------------------------------- */
 
@@ -56,6 +58,9 @@
 #define staticKey    		31
 #define unionKey    		32
 #define volatileKey    		33
+#define mallocKey			34
+#define callocKey    		35
+#define freeKey	    		36
 
 /* arithmetic operators */
 #define plus    			0 // +
@@ -65,7 +70,7 @@
 #define increment    		4 // ++ 
 #define decrease    		5 // --
 
-/* logical operators */
+/* logical and relacional operators */
 #define isMoreThan    		0 // >
 #define isLessThan    		1 // <
 #define atrib    			2 // =
@@ -76,6 +81,7 @@
 #define isMoreOrEqual       7 // >=
 #define isLessOrEqual       8 // <=
 #define not 				9 // !
+#define ternary				10// ?:
 
 
 /* separators */
@@ -91,10 +97,13 @@
 #define space    			9 // 
 #define tab                 10//
 
-/*Binaries*/
-#define comercial			0 //&
-#define orB					1 //|
-/* quotation mark, backslash and apostrophe also are separators */
+/* bitwise */
+#define comercial			0 // &
+#define bwor				1 // |
+#define bwxor				2 // ^
+#define bwnot				3 // ~
+#define shiftRight			4 // >>
+#define shiftLeft			5 // <<
 
 /* ---------------------------------------------------------------------- */
 
@@ -116,10 +125,15 @@ typedef struct List{
 
 }list;
 
-void MatchOperator(char* unidentifiedOperator, list* tokensList);
-void MatchSeparator(char* unidentifiedSeparator, list* tokensList);
-void ChooseType(char* unidentifiedToken, list* tokensList);
+void lexicalAnalyzer(list* tokensList, char* line, int lineNumber);
+int isLiteral(char* line, int *i, list* tokensList);
+int isComment(char* line, int *i, int size, list* tokensList);
+int isKeywords(char* unidentifiedToken, list* tokensList);
+int isIdentifierOrNumber(char* unidentifiedToken, list* tokensList);
+int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i);
+int MatchSeparator(char unidentifiedSeparator, list* tokensList);
+void ChooseType(char* unidentifiedToken, list* tokensList, int i, int lineNumber);
+
 list *createList();
 void insert(list* tokensList, Token token);
 void readFile(char* fileName);
-void lexicalAnalyzer(list* tokensList, char* line);
