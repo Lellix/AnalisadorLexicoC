@@ -1,4 +1,4 @@
-#include "bib.h"
+#include "sintatico.h"
 
 int line = 0;
 
@@ -19,6 +19,8 @@ list *createList(){
 }
 
 void insert(list* tokensList, Token token){
+
+	printf("FUNCAO INSERE Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
 
 	list *node = (list*)malloc(sizeof(list));
 
@@ -67,6 +69,9 @@ void readFile(char* fileName){
 		lexicalAnalyzer(tokensList, fileLine, line);
 		line++;
 	}
+	
+	printLista(tokensList);
+	language(tokensList);
 
 
 }

@@ -61,6 +61,7 @@
 #define mallocKey			34
 #define callocKey    		35
 #define freeKey	    		36
+#define voidKey				37
 
 /* arithmetic operators */
 #define plus    			0 // +
@@ -107,32 +108,38 @@
 
 /* STRUCTURES */
 
-typedef struct token{
+struct token{
 
 	int group; // 0 - keyword | 1 - identifier | 2 - arithmetic operator | 3 - logical operator | 4 - separator | 5 - comment
 	int type; //
 	int position[2];
 	char* name;
+	int line, column;
 
-}Token;
+};
 
-typedef struct List{
+typedef struct token Token;
+
+struct List{
 
 	Token tok;
 	struct List* next;
 	int empty;
 
-}list;
+};
+
+typedef struct List list;
 
 void cleanString(char* string);
 void lexicalAnalyzer(list* tokensList, char* line, int lineNumber);
-int isLiteral(char* line, int *i, list* tokensList, int lineNumber, Token token);
-int isComment(char* line, int *i, int size, list* tokensList, int lineNumber, Token token);
-int isKeywords(char* unidentifiedToken, list* tokensList, int column, int lineNumber, Token token);
-int isIdentifierOrNumber(char* unidentifiedToken, list* tokensList, int column, int lineNumber, Token token);
-int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i, int lineNumber, Token token);
-int MatchSeparator(char unidentifiedSeparator, list* tokensList, int column, int lineNumber, Token token);
-void ChooseType(char* unidentifiedToken, list* tokensList, int i, int lineNumber, Token token);
+int isLiteral(char* line, int *i, list* tokensList, int lineNumber );
+int isComment(char* line, int *i, int size, list* tokensList, int lineNumber );
+int isKeywords(char* unidentifiedToken, list* tokensList, int column, int lineNumber );
+int isIdentifierOrNumber(char* unidentifiedToken, list* tokensList, int column, int lineNumber );
+int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i, int lineNumber );
+int MatchSeparator(char unidentifiedSeparator, list* tokensList, int column, int lineNumber );
+void ChooseType(char* unidentifiedToken, list* tokensList, int i, int lineNumber );
+void printLista(list* tokensList);
 
 list *createList();
 void insert(list* tokensList, Token token);
