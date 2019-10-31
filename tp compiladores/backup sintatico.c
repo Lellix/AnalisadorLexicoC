@@ -1,7 +1,6 @@
 #include "sintatico.h"
 
 int verification = FALSE;
-int cont = 0;
 
 list* tokensList = NULL;
 list* currentToken = NULL;
@@ -42,22 +41,14 @@ char* ID2Name(int ID){
 
 void consumeToken(char* funcao){
 
-	if(currentToken->next == NULL) {
-		if(cont == 0){
-			printf("\n\t FIM DA EXECUCAO -- NENHUM ERRO ENCONTRADO.\n\n");
-		} else {
-			printf("\n\t FIM DA EXECUCAO -- %d ERRO(S) ENCONTRADO(S).\n\n", cont);
-		}
-		exit(1);
-	}
+	if(currentToken->next == NULL) exit(1);
 
-	//printf(" last token: %s - ", currentToken->tok.name);
+	printf(". . . . . %s  . . . . . last token:%s - ", funcao, currentToken->tok.name);
 	currentToken = currentToken->next;
-	//printf("current token: %s . . . . . %s  . . . . .\n", currentToken->tok.name, funcao);
+	printf("current token:%s \n", currentToken->tok.name);
 }
 
 void printError(char* expected, char* found){
-	cont++;
 
 	printf("\n");
 	printf("x ----------------------------------------- x\n");
@@ -82,24 +73,12 @@ void printError(char* expected, char* found){
 
 }
 
-void directiveList(){
-
-	if(currentToken->tok.group == include || currentToken->tok.group == define){
-		consumeToken("diretivas");
-		if(!(currentToken->tok.group == header)){
-			printError("header", ID2Name(currentToken->tok.group));
-			consumeToken("diretivas");
-		} 
-	}
-
-}
+void directiveList(){}
 
 void language(list* tokenslist){
 
 	tokensList = tokenslist;
 	currentToken = tokensList->next;
-
-	directiveList();
 
 	while(currentToken != NULL){
 
@@ -111,42 +90,53 @@ void language(list* tokenslist){
 
 void function(){
 
+	// <type>
 	type();
 
-	if(verification == FALSE){
-		printError("type", ID2Name(currentToken->tok.group));
-		consumeToken("function1");
-	}
-
-	if(currentToken->tok.group == identifiers){
-		consumeToken("function");
-	} else {
-		printError("identifier", ID2Name(currentToken->tok.group));
-		consumeToken("function1");
-	}
-
-	if(!(currentToken->tok.group == 4 && currentToken->tok.type == 2)){ // (
-		printError("(", currentToken->tok.name);
-	} else {
-		consumeToken("funcion2");
-	}
-
-	argumentsList(); // <argumentsList>
-
 	if(verification == TRUE){
+		// identifier
+		if(currentToken->tok.group == identifiers){
 
-		if(!(currentToken->tok.group == separators && currentToken->tok.type == rightParenthesis)){ // )
-			printError(")", currentToken->tok.name);
+			consumeToken("function");
+
+			if(currentToken->tok.group == 4 && currentToken->tok.type == 2){ // (
+
+				consumeToken("function");
+				argumentsList(); // <argumentsList>
+
+				if(verification == TRUE){
+
+					if(currentToken->tok.group == 4 && currentToken->tok.type == 3){ // )
+
+						consumeToken("function");
+						printf("%s\n", currentToken->tok.name);
+						stmScope();
+
+						return;
+
+					} else {
+
+						verification = FALSE;
+						printError(")", currentToken->tok.name);
+
+					}
+
+				}
+
+			} else {
+
+				printError("(", currentToken->tok.name);
+				verification = FALSE;
+
+			}
+
 		} else {
-			consumeToken("funcion3");
-		} 
 
-		stmScope();
+			printError("identifier", ID2Name(currentToken->tok.group));
+			verification = FALSE;
 
-		return;
-
+		}
 	}
-
 }
 
 void type(){
@@ -244,14 +234,18 @@ void statement(){
 
 	//printf("aaa %d %d -------------- \n",currentToken->tok.group, currentToken->tok.type);
 
+	printf(" - for %d\n",verification);
 	stmFor();
 
+	printf(" -- while %d\n",verification);
 	if(verification == FALSE){
 		stmWhile();
 	}
 
+	printf(" --- declaracao %d\n",verification);
 	if(verification == FALSE){
 		declaration();
+		printf(" ---- expressao %d\n",verification);
 		if(verification == FALSE){
 			expression1();
 			if(verification == TRUE){
@@ -265,20 +259,24 @@ void statement(){
 		}
 	}
 
+	printf(" ----- if %d\n",verification);
 	if(verification == FALSE){
 		stmIf();
 	}
 
+	printf(" ------ escopo %d\n",verification);
 	if(verification == FALSE){
 		if(currentToken->tok.group == 4 && currentToken->tok.type == 4){
 			stmScope();
 		}
 	}
 
+	printf(" ------- do while %d\n",verification);
 	if(verification == FALSE){
 		stmDoWhile();
 	}
 
+	printf(" -------- return %d\n",verification);
 	if(verification == FALSE){
 		if(currentToken->tok.group == 0 && currentToken->tok.type == 11){
 			stmReturn();
@@ -292,6 +290,7 @@ void statement(){
 		}
 	}
 
+	printf(" --------- break %d\n",verification);
 	if(verification == FALSE){
 		if(currentToken->tok.group == 0 && currentToken->tok.type == 13){
 			consumeToken("statement = break");
@@ -304,6 +303,7 @@ void statement(){
 		}
 	}
 
+	printf(" ----------- ; %d\n",verification);
 	if(verification == FALSE){
 		if(currentToken->tok.group == 4 && currentToken->tok.type == semicolon){
 			consumeToken("statement - ;");
@@ -326,6 +326,7 @@ void stmIf(){
 				consumeToken("stmIf");
 				statement();
 				if(verification == TRUE) {
+					printf("saiu do IF\n");
 					elseFragment();
 				}
 			}  else {
@@ -343,37 +344,42 @@ void stmFor(){
 
 	if(currentToken->tok.group == keywords && currentToken->tok.type == forKey){
 
+		printf(" ------------ FOR ---------------- \n");
 		consumeToken("stmFor");
 		if(currentToken->tok.group == 4 &&currentToken->tok.type == leftParenthesis)
 		{
 			consumeToken("stmFor");
 			expression1();
 			if(verification == TRUE){
-				if(!(currentToken->tok.group == 4 &&currentToken->tok.type == semicolon)){
-					printError(";", currentToken->tok.name);
-				}
-
-				consumeToken("stmFor");
-				optionalExpression();
-				if(verification == TRUE){
-					if(!(currentToken->tok.group == 4 &&currentToken->tok.type == semicolon)){
-						printError(";", currentToken->tok.name);
-					}
+				if(currentToken->tok.group == 4 &&currentToken->tok.type == semicolon){
 
 					consumeToken("stmFor");
 					optionalExpression();
 					if(verification == TRUE){
-
-						if(currentToken->tok.group == 4 &&currentToken->tok.type == rightParenthesis){
+						if(currentToken->tok.group == 4 &&currentToken->tok.type == semicolon){
 
 							consumeToken("stmFor");
-							statement();
-						} else { 
+							optionalExpression();
+							if(verification == TRUE){
 
-							verification = FALSE;
-							printError(")", currentToken->tok.name);
+								if(currentToken->tok.group == 4 &&currentToken->tok.type == rightParenthesis){
+
+									consumeToken("stmFor");
+									statement();
+								} else { 
+
+									verification = FALSE;
+									printError(")", currentToken->tok.name);
+								}
+							}
+						} else {
+							verification = FALSE; 
+							printError(";", currentToken->tok.name);
 						}
 					}
+				} else {
+					verification = FALSE;
+					printError(";", currentToken->tok.name);
 				}
 			} 
 		} else {

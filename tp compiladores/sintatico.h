@@ -15,6 +15,8 @@ typedef struct node{
 
 } Node;
 
+char* ID2Name(int ID);
+
 void consumeToken();
 
 void printError(char* expected, char* found);
@@ -80,19 +82,5 @@ void arithmetic();
 void duplicatedOperatorArithmetic();
 
 void composedOperatorArithmetic();
-
-void switch1();
-
-void switch2();
-
-void caseList();
-
-void caseListLine();
-
-void functionCall();
-
-void functionCallArgumentsList();
-
-void functionCallArgumentsListLine();
 
 void stmIf();

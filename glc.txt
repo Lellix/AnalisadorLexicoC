@@ -27,6 +27,7 @@
 										break ponto_virgula |
 										<switch01> |
 										ponto_virgula
+<statementIf>						::= if abre_parenteses <expressao> fecha_parenteses <statement> <parteElse>
 <statementFor>						::= for abre_parenteses <expressao> ponto_virgula <expressaoOpcional> ponto_virgula <expressaoOpcional> fecha_parenteses <statement>
 <expressaoOpcional>					::= <expressao> |
 										ε

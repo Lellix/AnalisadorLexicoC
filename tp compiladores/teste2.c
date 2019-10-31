@@ -1,4 +1,6 @@
-int main(int a, char b)	{
+#include ; //erro
+
+lala /* erro */ main(int a, char b /* erro */	{ 
 
 	int cont;
 
@@ -8,7 +10,7 @@ int main(int a, char b)	{
 		cont = 1;
 	}
 
-	for(int i = 0; i < 3; i++){
+	for(i = 0, /*erro*/ i < 3; i++){
 
 		if(i == cont){
 			cont = 0;

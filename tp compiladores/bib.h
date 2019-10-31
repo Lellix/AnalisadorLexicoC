@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include "colors.h"
 
 /* GROUPS */
 
@@ -112,7 +113,6 @@ struct token{
 
 	int group; // 0 - keyword | 1 - identifier | 2 - arithmetic operator | 3 - logical operator | 4 - separator | 5 - comment
 	int type; //
-	int position[2];
 	char* name;
 	int line, column;
 

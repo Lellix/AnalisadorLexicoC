@@ -15,6 +15,9 @@ void cleanString(char* string){
 
 void lexicalAnalyzer(list* tokensList, char* line, int lineNumber){
 
+	token1.line = lineNumber;
+	token2.line = lineNumber;
+
 	int size = strlen(line);
 	int type;
 	int i, j = 0;
@@ -23,6 +26,7 @@ void lexicalAnalyzer(list* tokensList, char* line, int lineNumber){
 	
 	/* percorre a string até achar um separador ou operador */
 	for(i = 0; i < size; i++){
+		token2.column = i;
 
 		/* if the current char is a comment symbol */
 		if (isComment(line, &i, size, tokensList, lineNumber) != -1){ 
@@ -35,7 +39,6 @@ void lexicalAnalyzer(list* tokensList, char* line, int lineNumber){
 
 			}
 
-			//insert(tokensList, token1);
 			aux = 1;
 
 		/* if the current char is a literal symbol */
@@ -64,7 +67,7 @@ void lexicalAnalyzer(list* tokensList, char* line, int lineNumber){
 
 			}
 
-			if(line[i]!=' ' && line[i]!='	') insert(tokensList, token2);
+			if(line[i]!=' ' && line[i]!=9) insert(tokensList, token2);
 			aux = 1;
 
 		/* if the current char is a operator*/
@@ -115,7 +118,7 @@ int isLiteral(char* line, int *i, list* tokensList, int lineNumber){
 		unidentifiedToken[j] = line[*i];
 
 		token2.group = literal;
-		token2.type = literal;
+		token2.type = include;
 		token2.name = unidentifiedToken;
 
 		//printf("Token: %s group: %d type: %d\n\n",token2.name, token2.group, token2.type);
@@ -513,17 +516,17 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = increment;
 					token2.name = "+=";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
 				} else if(next == '+'){
 
 					token2.group = arithmeticOperators;
-					token2.type = not;
+					token2.type = increment;
 					token2.name = "++";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -548,7 +551,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = decrease;
 					token2.name = "-=";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -558,7 +561,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = decrease;
 					token2.name = "--";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -582,7 +585,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = times;
 					token2.name = "*=";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -607,7 +610,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = division;
 					token2.name = "/=";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -632,7 +635,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = shiftRight;
 					token2.name = ">>";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -642,7 +645,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = isMoreOrEqual;
 					token2.name = ">=";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -665,7 +668,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = shiftLeft;
 					token2.name = "<<";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -675,7 +678,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = isLessOrEqual;
 					token2.name = "<=";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -695,16 +698,16 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 				if(next == '='){
 
 					token2.group = logicalOperators;
-					token2.type = andOperator;
-					token2.name = "&&";
+					token2.type = equals;
+					token2.name = "==";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);	
 				} else {
-					token2.group = arithmeticOperators;
-					token2.type = equals;
+					token2.group = logicalOperators;
+					token2.type = atrib;
 					token2.name = "=";
 
 					 
@@ -721,7 +724,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = andOperator;
 					token2.name = "&&";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -745,7 +748,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = orOperator;
 					token2.name = "||";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -770,7 +773,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = notOperator;
 					token2.name = "!=";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -795,7 +798,7 @@ int MatchOperator(char unidentifiedOperator, list* tokensList, char next, int *i
 					token2.type = ternary;
 					token2.name = "?:";
 
-					*i++;
+					*i+=1;
 
 					 
 					//printf("Token: %s group: %d type: %d\n\n", token2.name, token2.group, token2.type);
@@ -937,8 +940,12 @@ int MatchSeparator(char unidentifiedSeparator, list* tokensList, int column, int
 
 void ChooseType(char* unidentifiedToken, list* tokensList, int i, int lineNumber){
 
-	int aux = isKeywords(unidentifiedToken, tokensList, i, lineNumber);
 	int column = i-strlen(unidentifiedToken);
+
+	token1.column = column;
+
+	int aux = isKeywords(unidentifiedToken, tokensList, i, lineNumber);
+
 
 	if(aux == -1){
 
@@ -961,13 +968,23 @@ void ChooseType(char* unidentifiedToken, list* tokensList, int i, int lineNumber
 void printLista(list* tokensList){
 
 	list* aux = tokensList;
-	printf("____________________________________________________________________________________\n");
+	printf("____________________________________________________________________________________\n\n");
+
 
 	do{
 
 		aux = aux->next;
-		printf("Token: %s group: %d type: %d\n\n", aux->tok.name, aux->tok.group, aux->tok.type);
+		background(WHITE);
+		foreground(BLACK);
+		printf("Token:");
+		background(BLACK);
+		foreground(GREEN);
+		printf("  %s \n",  aux->tok.name);
+		foreground(WHITE);
+		printf("\tgroup: %d type: %d \n\tposition: [%d:%d] \n\n",aux->tok.group, aux->tok.type, aux->tok.line, aux->tok.column);
 
 	}while(aux->next != NULL);
+
+	printf("____________________________________________________________________________________\n");
 
 }

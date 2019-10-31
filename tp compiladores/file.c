@@ -20,29 +20,36 @@ list *createList(){
 
 void insert(list* tokensList, Token token){
 
-	printf("FUNCAO INSERE Token: %s group: %d type: %d\n\n",token.name, token.group, token.type);
-
 	list *node = (list*)malloc(sizeof(list));
+	node->tok.name = (char*)malloc(strlen(token.name)*sizeof(char));
 
 	if(node == NULL){
 		printf("Pointer error (node is NULL) : file.c line \n"); /*  MUDAR A LINHA */
 		exit(1);
 	}
 
-	node->tok = token;
-	node->next = NULL;
+	if(strlen(token.name) > 0){
+		node->tok.group = token.group;
+		node->tok.type = token.type;
+		node->tok.line = token.line+1;
+		node->tok.column = token.column+1;
 
-	if(tokensList->empty){
-		
-		tokensList->next = node;
-		tokensList->empty = 0;
+		strcpy(node->tok.name, token.name);
 
-	}else{
+		node->next = NULL;
 
-		list *aux = tokensList->next;
-		while(aux->next != NULL) aux = aux->next;
+		if(tokensList->empty){
+			
+			tokensList->next = node;
+			tokensList->empty = 0;
 
-		aux->next = node;
+		}else{
+
+			list *aux = tokensList->next;
+			while(aux->next != NULL) aux = aux->next;
+
+			aux->next = node;
+		}
 	}
 
 }
