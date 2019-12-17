@@ -1,16 +1,16 @@
 int main(int a, char b)	{
 
-	int cont;
+	int cont, cont;
 
 	if(i < cont){
-		cont = 0;
+		cont = 0.1;
 	} else {
 		cont = 1;
 	}
 
 	for(int i = 0; i < 3; i++){
 
-		if(i == cont){
+		if(lala == cont){
 			cont = 0;
 		} else {
 			cont = 1;

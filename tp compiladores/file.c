@@ -77,7 +77,7 @@ void readFile(char* fileName){
 		line++;
 	}
 	
-	printLista(tokensList);
+	//printLista(tokensList);
 	language(tokensList);
 
 

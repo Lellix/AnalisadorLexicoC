@@ -4,6 +4,14 @@
 #include <ctype.h>
 #include "colors.h"
 
+#define typeof(var) _Generic( (var),\
+char: "Char",\
+int: "Integer",\
+float: "Float",\
+char *: "String",\
+void *: "Pointer",\
+default: "Undefined")
+
 /* GROUPS */
 
 #define keywords             0
@@ -129,6 +137,15 @@ struct List{
 };
 
 typedef struct List list;
+
+struct Symbol{
+
+	int type;
+	char* name;
+	int line, column;
+};
+
+typedef struct Symbol symbol;
 
 void cleanString(char* string);
 void lexicalAnalyzer(list* tokensList, char* line, int lineNumber);

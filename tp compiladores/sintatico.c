@@ -2,9 +2,61 @@
 
 int verification = FALSE;
 int cont = 0;
+int contTable = 0;
+int typeAux;
+
+char* last;
 
 list* tokensList = NULL;
 list* currentToken = NULL;
+
+symbol* table;
+
+symbol* CreateTable(){
+
+	last = (char*) malloc(20*sizeof(char));
+
+	symbol* table = (symbol*) malloc(250*sizeof(symbol));
+	int i;
+
+	for(i = 0; i < 250; i++){
+		table[i].name = (char*) malloc(20*sizeof(char));
+		table[i].type = -1;
+		table[i].column = -1;
+		table[i].line = -1;
+	}
+
+	return table;
+}
+
+int varAlreadyExists(char* symbName){
+
+	int i;
+
+	if(contTable > 0){
+		for(i = 0; i < contTable; i++){
+			if(strcmp(table[i].name, symbName) == 0){
+				return 1;
+			}
+		}
+
+	}
+
+	return 0;
+}
+
+int returnType(char* symbName){
+
+	int i;
+	
+	for(i = 0; i < contTable; i++){
+		if(strcmp(table[i].name, symbName) == 0){
+			return table[i].type;
+		}
+	}
+
+	return -1;
+}
 
 /* int to char */
 char* ID2Name(int ID){
@@ -99,6 +151,8 @@ void language(list* tokenslist){
 	tokensList = tokenslist;
 	currentToken = tokensList->next;
 
+	table = CreateTable();
+
 	directiveList();
 
 	while(currentToken != NULL){
@@ -111,6 +165,8 @@ void language(list* tokenslist){
 
 void function(){
 
+	int j;
+
 	type();
 
 	if(verification == FALSE){
@@ -119,6 +175,7 @@ void function(){
 	}
 
 	if(currentToken->tok.group == identifiers){
+
 		consumeToken("function");
 	} else {
 		printError("identifier", ID2Name(currentToken->tok.group));
@@ -155,6 +212,7 @@ void type(){
 		((currentToken->tok.type >=0 && currentToken->tok.type <=3) ||
 		currentToken->tok.type == voidKey)){
 
+		typeAux = currentToken->tok.type;
 		consumeToken("type");
 		verification = TRUE;
 		return;
@@ -191,11 +249,27 @@ void argumentsList(){
 }
 
 void argument(){
-
+	int j;
 	type();
 
 	if(verification == TRUE){
 		if(currentToken->tok.group = identifiers){
+			int teste = varAlreadyExists(currentToken->tok.name);
+		if(teste == 0){
+
+			table[contTable].type = typeAux;
+
+			for(j = 0; j < strlen(currentToken->tok.name); j++){
+				table[contTable].name[j] = currentToken->tok.name[j];
+			}
+
+			table[contTable].line = currentToken->tok.line;
+			table[contTable].column = currentToken->tok.column;
+			contTable++;
+
+		} else {
+			printf("Var [%s] already exists! Position[%d, %d]\n", currentToken->tok.name, currentToken->tok.line, currentToken->tok.column);
+		}
 			consumeToken("argument");
 			verification = TRUE;
 			return;
@@ -222,11 +296,30 @@ void declaration(){
 }
 
 void identifiersList(){
+	int j;
 
 	if(currentToken->tok.group == identifiers){
 
+		int teste = varAlreadyExists(currentToken->tok.name);
+		if(teste == 0){
+
+			table[contTable].type = typeAux;
+
+			for(j = 0; j < strlen(currentToken->tok.name); j++){
+				table[contTable].name[j] = currentToken->tok.name[j];
+			}
+
+			table[contTable].line = currentToken->tok.line;
+			table[contTable].column = currentToken->tok.column;
+			contTable++;
+
+		} else {
+			printf("Var [%s] already exists! Position[%d, %d]\n", currentToken->tok.name, currentToken->tok.line, currentToken->tok.column);
+		}
+
 		consumeToken("identifiersList");
-		if(currentToken->tok.name == ","){
+
+		if(currentToken->tok.group == separators && currentToken->tok.type == comma){
 			consumeToken("identifiersList");
 			identifiersList();
 		}
@@ -542,9 +635,37 @@ void stmListLine(){
 
 void expression1(){
 
+	int aux = 0, j;
+
 	type();
 
+	int teste = varAlreadyExists(currentToken->tok.name);
+		if(teste == 0 && verification == TRUE){
+
+			table[contTable].type = typeAux;
+
+			for(j = 0; j < strlen(currentToken->tok.name); j++){
+				table[contTable].name[j] = currentToken->tok.name[j];
+			}
+
+			table[contTable].line = currentToken->tok.line;
+			table[contTable].column = currentToken->tok.column;
+			contTable++;
+
+		} else if(currentToken->tok.group == identifiers && verification == TRUE) {
+			printf("Var [%s] already exists! Position[%d, %d]\n", currentToken->tok.name, currentToken->tok.line, currentToken->tok.column);
+		}
+
 	if(currentToken->tok.group == identifiers){
+		if(verification == FALSE &&(varAlreadyExists(currentToken->tok.name) == 0)) printf("Var %s doesn't exists. Position: [%d:%d]\n", currentToken->tok.name, currentToken->tok.line, currentToken->tok.column);
+
+		if(aux>0 && currentToken->tok.type != typeAux){
+			printf("Warning: different type comparison. Position: [%d,%d]\n",currentToken->tok.line, currentToken->tok.column);
+		}
+
+		aux++;
+		typeAux = currentToken->tok.type;
+		strcpy(last, currentToken->tok.name);
 
 		consumeToken("expression1");
 		expression2();
@@ -552,6 +673,8 @@ void expression1(){
 	} else {
 		valueR();
 	}
+
+	aux = 0;
 
 }
 
@@ -719,11 +842,24 @@ void factor(){
 		factor();
 
 	} else if(currentToken->tok.group == identifiers){
+		if(varAlreadyExists(currentToken->tok.name) == 0) printf("Var %s doesn't exists. Position: [%d:%d]", currentToken->tok.name, currentToken->tok.line, currentToken->tok.column);
 
 		consumeToken("factor");
 		verification = TRUE;
 
 	} else if(currentToken->tok.group == number){
+
+		int aux = 0, i;
+
+		for(i=0; i < strlen(currentToken->tok.name); i++){
+			if(currentToken->tok.name[i] == '.'){
+				aux = 1;
+			}
+		}
+
+		if((returnType(last) == intKey && aux == 1) || ((returnType(last) == floatKey || returnType(last) == doubleKey) && aux == 0)){
+			printf("Warning: different type comparison. Position: [%d,%d]\n",currentToken->tok.line, currentToken->tok.column);
+		}
 
 		consumeToken("factor");
 		verification = TRUE;
