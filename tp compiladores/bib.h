@@ -143,6 +143,9 @@ struct Symbol{
 	int type;
 	char* name;
 	int line, column;
+	int value;
+	char* word;
+
 };
 
 typedef struct Symbol symbol;

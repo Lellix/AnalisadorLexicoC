@@ -17,7 +17,7 @@ typedef struct node{
 
 char* ID2Name(int ID);
 
-void consumeToken();
+void consumeToken(char* label);
 
 void printError(char* expected, char* found);
 
@@ -25,23 +25,23 @@ void directiveList();
 
 void language(list* tokenslist);
 
-void function();
+void function(char* label);
 
-void type();
+void type(char* label);
 
-void argumentsList();
+void argumentsList(char* label);
 
-void argument();
+void argument(char* label);
 
-void declaration();
+void declaration(char* label);
 
-void identifiersList();
+void identifiersList(char* label);
 
-void statement();
+void statement(char* label);
 
 void stmFor();
 
-void optionalExpression();
+void optionalExpression(char* label);
 
 void stmWhile();
 
@@ -49,38 +49,42 @@ void stmDoWhile();
 
 void elseFragment();
 
-void stmReturn();
+void stmReturn(char* label);
 
-void stmScope();
+void stmScope(char* label);
 
-void stmList();
+void stmList(char* label);
 
-void stmListLine();
+void stmListLine(char* label);
 
-void expression1();
+void expression1(char* label);
 
-void expression2();
+void expression2(char* label);
 
-void valueR();
+void valueR(char* label);
 
-void valueRLine();
+void valueRLine(char* label);
 
-void comparation();
+void comparation(char* label);
 
-void magnitude();
+void magnitude(char* label);
 
-void term();
+void term(char* label);
 
-void magnitudeLine();
+void magnitudeLine(char* label);
 
-void termLine();
+void termLine(char* label);
 
-void factor();
+void factor(char* label);
 
-void arithmetic();
+void arithmetic(char* label);
 
-void duplicatedOperatorArithmetic();
+void duplicatedOperatorArithmetic(char* label);
 
-void composedOperatorArithmetic();
+void composedOperatorArithmetic(char* label);
 
 void stmIf();
+
+void dataFile();
+
+void codeGeneratorAtrib(char* label);

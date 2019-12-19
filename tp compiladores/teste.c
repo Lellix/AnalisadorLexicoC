@@ -1,16 +1,16 @@
 int main(int a, char b)	{
 
-	int cont, cont;
+	int cont, i;
 
 	if(i < cont){
-		cont = 0.1;
+		cont = 0;
 	} else {
 		cont = 1;
 	}
 
-	for(int i = 0; i < 3; i++){
+	for(int j = 0; j < 3; j++){
 
-		if(lala == cont){
+		if(j == cont){
 			cont = 0;
 		} else {
 			cont = 1;
@@ -20,14 +20,8 @@ int main(int a, char b)	{
 
 	while(cont < 10){
 
-		cont++;
+		cont = cont++;
 
 	}
-
-	do{
-
-		cont--;
-
-	} while(cont > 0);
 
 }

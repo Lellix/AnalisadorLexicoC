@@ -1,0 +1,7 @@
+.data
+
+a: .byte 0
+b: .byte '0'
+cont: .byte 0
+i: .byte 0
+j: .byte 0
